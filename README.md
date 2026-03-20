@@ -192,3 +192,4 @@ alembic upgrade head
 ## 11) Advertencia de salud (disclaimer)
 
 Esta API no sustituye médico, nutriólogo ni entrenador profesional. El sistema debe mostrar advertencias para lesiones, enfermedades y condiciones especiales antes de recomendaciones automáticas.
+"# api-gym" 
