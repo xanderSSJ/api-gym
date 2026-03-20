@@ -11,7 +11,7 @@ services:
       - key: APP_NAME
         value: Gym API
       - key: APP_ENV
-        value: production
+        value: development
       - key: APP_DEBUG
         value: "false"
       - key: API_V1_PREFIX
@@ -49,13 +49,20 @@ services:
           name: gym-api-db
           property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
       - key: CELERY_BROKER_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
       - key: CELERY_RESULT_BACKEND
-        sync: false
-      - key: PAYMENT_WEBHOOK_SECRET
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
 
   - type: worker
     name: gym-api-worker
@@ -69,7 +76,7 @@ services:
       - key: APP_NAME
         value: Gym API
       - key: APP_ENV
-        value: production
+        value: development
       - key: APP_DEBUG
         value: "false"
       - key: API_V1_PREFIX
@@ -101,19 +108,29 @@ services:
       - key: CORS_ORIGINS
         value: https://xanderssj.xyz,http://localhost:3000,http://localhost:5173
       - key: SECRET_KEY
-        sync: false
+        fromService:
+          type: web
+          name: gym-api-web
+          envVarKey: SECRET_KEY
       - key: DATABASE_URL
         fromDatabase:
           name: gym-api-db
           property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
       - key: CELERY_BROKER_URL
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
       - key: CELERY_RESULT_BACKEND
-        sync: false
-      - key: PAYMENT_WEBHOOK_SECRET
-        sync: false
+        fromService:
+          type: keyvalue
+          name: gym-api-redis
+          property: connectionString
 
   - type: keyvalue
     name: gym-api-redis
