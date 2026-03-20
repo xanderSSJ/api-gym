@@ -23,7 +23,7 @@ services:
       - key: REFRESH_TOKEN_EXPIRE_DAYS
         value: "30"
       - key: ENABLE_EMAIL_VERIFICATION
-        value: "true"
+        value: "false"
       - key: ALLOW_INMEMORY_RATE_LIMIT_FALLBACK
         value: "false"
       - key: FREE_COOLDOWN_DAYS
@@ -31,7 +31,7 @@ services:
       - key: MAX_LOGIN_ATTEMPTS_PER_15_MIN
         value: "10"
       - key: MAX_REGISTER_ATTEMPTS_PER_HOUR
-        value: "10"
+        value: "100"
       - key: MAX_PLAN_GENERATIONS_PER_MIN
         value: "20"
       - key: STORAGE_PROVIDER
@@ -88,7 +88,7 @@ services:
       - key: REFRESH_TOKEN_EXPIRE_DAYS
         value: "30"
       - key: ENABLE_EMAIL_VERIFICATION
-        value: "true"
+        value: "false"
       - key: ALLOW_INMEMORY_RATE_LIMIT_FALLBACK
         value: "false"
       - key: FREE_COOLDOWN_DAYS
@@ -96,7 +96,7 @@ services:
       - key: MAX_LOGIN_ATTEMPTS_PER_15_MIN
         value: "10"
       - key: MAX_REGISTER_ATTEMPTS_PER_HOUR
-        value: "10"
+        value: "100"
       - key: MAX_PLAN_GENERATIONS_PER_MIN
         value: "20"
       - key: STORAGE_PROVIDER

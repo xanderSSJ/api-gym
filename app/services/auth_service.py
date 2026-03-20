@@ -6,6 +6,7 @@ from uuid import uuid4
 
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.config import settings
 from app.core.exceptions import bad_request, conflict, unauthorized
@@ -37,7 +38,17 @@ def _new_random_token() -> str:
 
 
 async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
-    stmt = select(User).where(User.email == email.lower()).limit(1)
+    stmt = (
+        select(User)
+        .options(
+            selectinload(User.physical_profile),
+            selectinload(User.training_preferences),
+            selectinload(User.nutrition_preferences),
+            selectinload(User.safety_profile),
+        )
+        .where(User.email == email.lower())
+        .limit(1)
+    )
     return (await session.execute(stmt)).scalar_one_or_none()
 
 
@@ -235,7 +246,17 @@ async def get_user_from_access_token(session: AsyncSession, token: str) -> User:
     user_id = payload.get("sub")
     if not user_id:
         raise unauthorized("Invalid token payload.")
-    stmt = select(User).where(User.id == user_id).limit(1)
+    stmt = (
+        select(User)
+        .options(
+            selectinload(User.physical_profile),
+            selectinload(User.training_preferences),
+            selectinload(User.nutrition_preferences),
+            selectinload(User.safety_profile),
+        )
+        .where(User.id == user_id)
+        .limit(1)
+    )
     user = (await session.execute(stmt)).scalar_one_or_none()
     if user is None:
         raise unauthorized("User not found.")
