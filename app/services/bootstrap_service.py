@@ -145,13 +145,17 @@ async def _ensure_food(
 async def seed_core_data(session: AsyncSession) -> None:
     free_plan = await _ensure_plan(session, "free", "Free", BillingPeriod.MONTHLY, 0)
     premium_plan = await _ensure_plan(session, "premium_monthly", "Premium Monthly", BillingPeriod.MONTHLY, 19.99)
+    premium_quarterly = await _ensure_plan(
+        session, "premium_quarterly", "Premium Quarterly", BillingPeriod.QUARTERLY, 49.99
+    )
+    premium_yearly = await _ensure_plan(session, "premium_yearly", "Premium Yearly", BillingPeriod.YEARLY, 179.99)
 
     # Free entitlements: strict windows and cooldown.
     await _ensure_entitlement(
         session,
         free_plan.id,
         FeatureKey.ROUTINE_GENERATION,
-        quota=1,
+        quota=2,
         window_unit=WindowUnit.ROLLING_DAYS,
         window_size=15,
         cooldown_days=15,
@@ -239,6 +243,62 @@ async def seed_core_data(session: AsyncSession) -> None:
         window_size=1,
         cooldown_days=0,
     )
+
+    for plan in [premium_quarterly, premium_yearly]:
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.ROUTINE_GENERATION,
+            quota=10,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.ROUTINE_REGENERATION,
+            quota=2,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.NUTRITION_GENERATION,
+            quota=10,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.NUTRITION_ADJUSTMENT,
+            quota=2,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.PHOTO_UPLOAD,
+            quota=60,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
+        await _ensure_entitlement(
+            session,
+            plan.id,
+            FeatureKey.HISTORY_ACCESS,
+            quota=9999,
+            window_unit=WindowUnit.MONTH,
+            window_size=1,
+            cooldown_days=0,
+        )
 
     for mg in ["Pecho", "Espalda", "Pierna", "Hombro", "Biceps", "Triceps", "Core"]:
         await _ensure_muscle_group(session, mg)
