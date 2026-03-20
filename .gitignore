@@ -20,6 +20,7 @@ venv/
 # Runtime and local storage
 storage/
 *.log
+*.egg-info/
 
 # OS
 Thumbs.db
