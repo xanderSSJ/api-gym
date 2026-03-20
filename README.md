@@ -189,7 +189,42 @@ alembic upgrade head
 - Mover fotos a bucket externo (S3/Cloud Storage/R2).
 - Añadir observabilidad (`Sentry`, logs JSON, métricas).
 
+### Deploy rapido en Render (desde este repo)
+
+1. En Render, crea un **Blueprint** desde el repo GitHub y usa el archivo `render.yaml`.
+2. El Blueprint crea:
+- `gym-api-web` (API)
+- `gym-api-worker` (Celery)
+- `gym-api-db` (PostgreSQL)
+- `gym-api-redis` (Key Value)
+3. En Render, completa estas variables manuales en **web** y **worker**:
+- `REDIS_URL`
+- `CELERY_BROKER_URL`
+- `CELERY_RESULT_BACKEND`
+- `SECRET_KEY` (usar el mismo valor en web y worker)
+- `PAYMENT_WEBHOOK_SECRET` (si aplica)
+4. Ajusta CORS con tu dominio real:
+- `CORS_ORIGINS=https://xanderssj.xyz,http://localhost:3000,http://localhost:5173`
+5. Haz deploy y prueba:
+- `https://<tu-servicio>.onrender.com/v1/health`
+
+### Dominio personalizado para API
+
+Para usar `api.xanderssj.xyz`:
+
+1. En Render, abre el servicio `gym-api-web` -> `Settings` -> `Custom Domains`.
+2. Agrega `api.xanderssj.xyz`.
+3. Render te mostrará el destino CNAME (ejemplo: `something.onrender.com`).
+4. En tu proveedor DNS, crea:
+- `Type`: `CNAME`
+- `Host/Name`: `api`
+- `Target`: el valor `onrender.com` que te dio Render
+5. Espera propagación DNS y verifica `https://api.xanderssj.xyz/v1/health`.
+
+Nota DNS importante:
+- Para un subdominio (`api.xanderssj.xyz`) normalmente se usa **CNAME**, no IP fija.
+- No hay una IP estática recomendada para enlazar manualmente en este caso.
+
 ## 11) Advertencia de salud (disclaimer)
 
 Esta API no sustituye médico, nutriólogo ni entrenador profesional. El sistema debe mostrar advertencias para lesiones, enfermedades y condiciones especiales antes de recomendaciones automáticas.
-"# api-gym" 
