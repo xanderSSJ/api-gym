@@ -3,10 +3,35 @@ from __future__ import annotations
 from datetime import UTC, date, datetime, timedelta
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 
+from app.api.v1.deps import request_ip
+from app.core.exceptions import too_many_requests
+from app.core.rate_limit import rate_limit_hit
+
 router = APIRouter(tags=["demo"])
+
+DEMO_FREE_FEATURE_LIMIT = 2
+DEMO_FREE_WINDOW_DAYS = 15
+DEMO_FREE_WINDOW_SECONDS = DEMO_FREE_WINDOW_DAYS * 24 * 60 * 60
+DEMO_LIMITED_FEATURES = {"rutina", "nutricion"}
+
+
+async def _enforce_demo_free_quota(request: Request, feature: str) -> None:
+    if feature not in DEMO_LIMITED_FEATURES:
+        return
+
+    client_ip = request_ip(request) or "anonymous"
+    allowed, _ = await rate_limit_hit(
+        key=f"rate:demo:{feature}:{client_ip}",
+        limit=DEMO_FREE_FEATURE_LIMIT,
+        window_seconds=DEMO_FREE_WINDOW_SECONDS,
+    )
+    if not allowed:
+        raise too_many_requests(
+            f"Demo free limit reached for '{feature}'. Allowed: {DEMO_FREE_FEATURE_LIMIT} requests every {DEMO_FREE_WINDOW_DAYS} days."
+        )
 
 
 def _demo_routine_payload() -> dict[str, Any]:
@@ -120,6 +145,13 @@ def _build_demo_payload(feature: str) -> dict[str, Any]:
         raise HTTPException(status_code=400, detail="feature must be one of: rutina, nutricion, beneficios")
 
     payload["generated_at"] = datetime.now(UTC).isoformat()
+    if feature in DEMO_LIMITED_FEATURES:
+        payload["demo_policy"] = {
+            "mode": "free_demo",
+            "scope": "ip",
+            "quota": DEMO_FREE_FEATURE_LIMIT,
+            "window_days": DEMO_FREE_WINDOW_DAYS,
+        }
     return payload
 
 
@@ -321,7 +353,7 @@ def _build_demo_html() -> str:
         button.addEventListener("click", () => fetchFeature(button.dataset.feature));
       });
 
-      fetchFeature("rutina");
+      fetchFeature("beneficios");
     </script>
   </body>
 </html>
@@ -330,6 +362,7 @@ def _build_demo_html() -> str:
 
 @router.get("/demo", response_class=HTMLResponse)
 async def demo(
+    request: Request,
     response: str = Query(default="html"),
     feature: str | None = Query(default=None),
 ):
@@ -341,5 +374,7 @@ async def demo(
     if response.lower() == "json":
         if not feature:
             raise HTTPException(status_code=400, detail="feature query param is required when response=json")
-        return JSONResponse(content=_build_demo_payload(feature.lower()))
+        normalized_feature = feature.lower()
+        await _enforce_demo_free_quota(request, normalized_feature)
+        return JSONResponse(content=_build_demo_payload(normalized_feature))
     return HTMLResponse(content=_build_demo_html())
