@@ -22,18 +22,18 @@ def test_demo_html_page() -> None:
     response = client.get("/v1/demo")
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "Gym API Demo Publica" in response.text
+    assert "Gym API Demo" in response.text
     assert "Rutina" in response.text
     assert "Nutricion" in response.text
     assert "Beneficios" in response.text
+    assert "Datos SQL" in response.text
 
 
 def test_demo_json_routine() -> None:
     client = TestClient(app)
-    unique_ip = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
+    device_id = f"device-{uuid.uuid4()}"
     response = client.get(
-        "/v1/demo?response=json&feature=rutina",
-        headers={"x-forwarded-for": unique_ip},
+        f"/v1/demo?response=json&feature=rutina&device_id={device_id}",
     )
     assert response.status_code == 200
     body = response.json()
@@ -43,14 +43,14 @@ def test_demo_json_routine() -> None:
     assert len(body["dias"]) >= 1
     assert body["demo_policy"]["quota"] == 2
     assert body["demo_policy"]["window_days"] == 15
+    assert body["demo_policy"]["scope"] == "device"
 
 
 def test_demo_json_nutrition_is_7_days() -> None:
     client = TestClient(app)
-    unique_ip = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
+    device_id = f"device-{uuid.uuid4()}"
     response = client.get(
-        "/v1/demo?response=json&feature=nutricion",
-        headers={"x-forwarded-for": unique_ip},
+        f"/v1/demo?response=json&feature=nutricion&device_id={device_id}",
     )
     assert response.status_code == 200
     body = response.json()
@@ -58,19 +58,32 @@ def test_demo_json_nutrition_is_7_days() -> None:
     assert len(body["dias"]) == 7
 
 
-def test_demo_quota_limit_for_routine_per_ip() -> None:
+def test_demo_quota_limit_for_routine_per_device() -> None:
     client = TestClient(app)
-    unique_ip = f"198.51.100.{uuid.uuid4().int % 200 + 1}"
-    headers = {"x-forwarded-for": unique_ip}
+    device_id = f"device-{uuid.uuid4()}"
 
-    first = client.get("/v1/demo?response=json&feature=rutina", headers=headers)
-    second = client.get("/v1/demo?response=json&feature=rutina", headers=headers)
-    third = client.get("/v1/demo?response=json&feature=rutina", headers=headers)
+    first = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_id}")
+    second = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_id}")
+    third = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_id}")
 
     assert first.status_code == 200
     assert second.status_code == 200
     assert third.status_code == 429
     assert "Demo free limit reached" in third.json()["detail"]
+
+
+def test_demo_quota_isolated_between_devices() -> None:
+    client = TestClient(app)
+    device_a = f"device-{uuid.uuid4()}"
+    device_b = f"device-{uuid.uuid4()}"
+
+    _ = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_a}")
+    _ = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_a}")
+    blocked = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_a}")
+    fresh = client.get(f"/v1/demo?response=json&feature=rutina&device_id={device_b}")
+
+    assert blocked.status_code == 429
+    assert fresh.status_code == 200
 
 
 def test_demo_json_requires_feature() -> None:
