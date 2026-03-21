@@ -177,7 +177,7 @@ async def _demo_sql_payload(session: AsyncSession) -> dict[str, Any]:
                 "user_id": user.id,
                 "full_name": user.full_name,
                 "email": user.email,
-                "phone": None,
+                "phone": user.phone,
                 "user_status": user.status.value,
                 "email_verified": verified,
                 "created_at": user.created_at.isoformat() if user.created_at else None,
@@ -439,8 +439,17 @@ def _build_demo_html() -> str:
         statusNode.textContent = `Consultando ${feature}...`;
         const response = await fetch(url);
         const data = await response.json();
-        if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
         currentData = data;
+        if (!response.ok) {
+          currentData = {
+            feature,
+            error: data.detail || `HTTP ${response.status}`,
+            status: response.status,
+            response_json: data,
+          };
+          jsonView.textContent = JSON.stringify(currentData, null, 2);
+          throw new Error(currentData.error);
+        }
         renderPretty(data);
         jsonView.textContent = JSON.stringify(data, null, 2);
         statusNode.textContent = `Cargado: ${feature}`;
@@ -462,8 +471,11 @@ def _build_demo_html() -> str:
       document.querySelectorAll("button[data-feature]").forEach((btn) => {
         btn.addEventListener("click", () => {
           loadFeature(btn.dataset.feature).catch((error) => {
-            pretty.innerHTML = `<p style="color:#f87171;"><strong>Error:</strong> ${esc(error.message)}</p>`;
-            jsonView.textContent = JSON.stringify({ error: error.message }, null, 2);
+            if (!currentData || !currentData.feature) {
+              currentData = { feature: btn.dataset.feature, error: error.message };
+              jsonView.textContent = JSON.stringify(currentData, null, 2);
+            }
+            pretty.innerHTML = `<p style="color:#f87171;"><strong>Error:</strong> ${esc(error.message)}</p><p class="muted">Puedes descargar el JSON de este error con el boton "Descargar JSON".</p>`;
             statusNode.textContent = "Error";
           });
         });

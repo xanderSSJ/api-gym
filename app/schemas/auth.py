@@ -7,6 +7,7 @@ class RegisterRequest(BaseModel):
     full_name: str = Field(min_length=2, max_length=120)
     email: EmailStr
     password: str = Field(min_length=12, max_length=128)
+    phone: str | None = Field(default=None, max_length=30)
     terms_accepted: bool
     privacy_accepted: bool
 

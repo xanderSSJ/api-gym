@@ -53,6 +53,7 @@ async def register(
         full_name=payload.full_name,
         email=payload.email,
         password=payload.password,
+        phone=payload.phone,
         terms_accepted=payload.terms_accepted,
         privacy_accepted=payload.privacy_accepted,
         ip=ip,

@@ -6,6 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy import text
 
 from app.api.v1.router import api_router
 from app.core.config import settings
@@ -24,6 +25,8 @@ async def lifespan(app: FastAPI):
     if settings.app_env in {"development", "local"}:
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
+            # Keep local/dev schemas compatible when new nullable columns are introduced.
+            await conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(30)"))
         async with AsyncSessionLocal() as session:
             await seed_core_data(session)
             await session.commit()

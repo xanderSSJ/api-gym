@@ -57,6 +57,7 @@ async def register_user(
     full_name: str,
     email: str,
     password: str,
+    phone: str | None,
     terms_accepted: bool,
     privacy_accepted: bool,
     ip: str | None,
@@ -67,7 +68,13 @@ async def register_user(
     if not terms_accepted or not privacy_accepted:
         raise bad_request("Terms and privacy acceptance are required.")
 
-    user = User(full_name=full_name, email=email.lower(), password_hash=get_password_hash(password))
+    normalized_phone = phone.strip() if phone and phone.strip() else None
+    user = User(
+        full_name=full_name,
+        email=email.lower(),
+        phone=normalized_phone,
+        password_hash=get_password_hash(password),
+    )
     session.add(user)
     await session.flush()
 
