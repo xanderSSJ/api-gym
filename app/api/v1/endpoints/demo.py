@@ -844,5 +844,5 @@ async def demo(
         payload = await _build_demo_payload(normalized_feature, session, resolved_device_id)
         if normalized_feature in DEMO_LIMITED_FEATURES:
             payload["demo_device_id"] = resolved_device_id
-        return JSONResponse(content=payload)
-    return HTMLResponse(content=_build_demo_html())
+        return JSONResponse(content=payload, headers={"Cache-Control": "no-store"})
+    return HTMLResponse(content=_build_demo_html(), headers={"Cache-Control": "no-store"})
