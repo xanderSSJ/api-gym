@@ -107,7 +107,11 @@ Frontend local (localhost)
 
 ### Admin import SQL (controlado)
 - `PUT /v1/admin/sql-import`
-  - Requiere header `X-Admin-Import-Key`
+  - Si `ADMIN_IMPORT_REQUIRE_KEY=true`, requiere `ADMIN_IMPORT_KEY` por alguno de estos medios:
+    - header `X-Admin-Import-Key` (recomendado)
+    - body JSON `admin_import_key`
+    - query param `?admin_import_key=...`
+  - Si `ADMIN_IMPORT_REQUIRE_KEY=false`, no pide llave.
   - Acepta dos modos:
     - `sql`: solo permite `INSERT` y `UPDATE`
     - `users`: importa usuarios/membresias desde JSON y genera `id` automatico
@@ -174,6 +178,7 @@ Configura `.env`:
 - `REDIS_URL=redis://localhost:6379/0` (opcional)
 - `ALLOW_INMEMORY_RATE_LIMIT_FALLBACK=true`
 - `ENABLE_SQL_IMPORT_ENDPOINT=true` (solo para carga manual controlada)
+- `ADMIN_IMPORT_REQUIRE_KEY=false` (solo demo; en produccion usar `true`)
 - `ADMIN_IMPORT_KEY=tu_llave_super_segura`
 
 Levanta la API:
@@ -191,7 +196,7 @@ Request:
 - URL: `http://localhost:8000/v1/admin/sql-import`
 - Headers:
   - `Content-Type: application/json`
-  - `X-Admin-Import-Key: tu_llave_super_segura`
+  - `X-Admin-Import-Key: tu_llave_super_segura` (opcional; no se necesita si `ADMIN_IMPORT_REQUIRE_KEY=false`)
 
 Body JSON (modo SQL):
 ```json
@@ -208,6 +213,7 @@ Nota:
 Body JSON (modo usuarios desde JSON):
 ```json
 {
+  "admin_import_key": "tu_llave_super_segura",
   "dry_run": false,
   "auto_verify_email": true,
   "default_password": "1234567890",

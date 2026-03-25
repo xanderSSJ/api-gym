@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import re
+import secrets
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -126,14 +127,32 @@ def _require_sql_import_enabled() -> None:
 
 
 def _require_admin_key(admin_key: str | None) -> None:
+    if not settings.admin_import_require_key:
+        return
+
     expected = settings.admin_import_key.strip()
     if not expected:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="ADMIN_IMPORT_KEY is not configured.",
         )
-    if admin_key != expected:
+    provided = (admin_key or "").strip()
+    if not provided:
+        raise forbidden("Missing admin import key.")
+    if not secrets.compare_digest(provided, expected):
         raise forbidden("Invalid admin import key.")
+
+
+def _resolve_admin_import_key(
+    *,
+    header_key: str | None,
+    body_key: str | None,
+    query_key: str | None,
+) -> str | None:
+    for candidate in (header_key, body_key, query_key):
+        if candidate and candidate.strip():
+            return candidate.strip()
+    return None
 
 
 async def _build_snapshot(session: AsyncSession) -> SQLImportSnapshot:
@@ -282,9 +301,15 @@ async def sql_import(
     payload: SQLImportRequest,
     session: AsyncSession = Depends(get_db_session),
     x_admin_import_key: str | None = Header(default=None),
+    admin_import_key: str | None = Query(default=None),
 ) -> SQLImportResponse:
     _require_sql_import_enabled()
-    _require_admin_key(x_admin_import_key)
+    resolved_admin_key = _resolve_admin_import_key(
+        header_key=x_admin_import_key,
+        body_key=payload.admin_import_key,
+        query_key=admin_import_key,
+    )
+    _require_admin_key(resolved_admin_key)
 
     results: list[SQLImportStatementResult] = []
     imported_users: list[SQLImportUserResult] = []

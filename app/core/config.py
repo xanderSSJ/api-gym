@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     max_plan_generations_per_min: int = Field(default=20, alias="MAX_PLAN_GENERATIONS_PER_MIN")
     free_cooldown_days: int = Field(default=15, alias="FREE_COOLDOWN_DAYS")
     enable_sql_import_endpoint: bool = Field(default=False, alias="ENABLE_SQL_IMPORT_ENDPOINT")
+    admin_import_require_key: bool = Field(default=True, alias="ADMIN_IMPORT_REQUIRE_KEY")
     admin_import_key: str = Field(default="", alias="ADMIN_IMPORT_KEY")
 
     storage_provider: str = "local"
