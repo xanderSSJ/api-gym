@@ -105,6 +105,18 @@ Frontend local (localhost)
 - `GET /v1/jobs/{job_id}`
 - `GET /v1/health`
 
+### Admin import SQL (controlado)
+- `PUT /v1/admin/sql-import`
+  - Requiere header `X-Admin-Import-Key`
+  - Solo permite `INSERT` y `UPDATE`
+  - Tablas permitidas:
+    - `users`
+    - `user_memberships`
+    - `user_physical_profiles`
+    - `user_training_preferences`
+    - `user_nutrition_preferences`
+    - `user_safety_profiles`
+
 ## 6) Estructura del proyecto
 
 ```text
@@ -159,6 +171,8 @@ Configura `.env`:
 - `DATABASE_URL=postgresql+psycopg://usuario:password@localhost:5432/gym_api`
 - `REDIS_URL=redis://localhost:6379/0` (opcional)
 - `ALLOW_INMEMORY_RATE_LIMIT_FALLBACK=true`
+- `ENABLE_SQL_IMPORT_ENDPOINT=true` (solo para carga manual controlada)
+- `ADMIN_IMPORT_KEY=tu_llave_super_segura`
 
 Levanta la API:
 ```powershell
@@ -167,6 +181,27 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 Documentacion:
 - `http://localhost:8000/v1/docs`
+
+### Ejemplo de uso del import SQL (Postman)
+
+Request:
+- Metodo: `PUT`
+- URL: `http://localhost:8000/v1/admin/sql-import`
+- Headers:
+  - `Content-Type: application/json`
+  - `X-Admin-Import-Key: tu_llave_super_segura`
+
+Body JSON:
+```json
+{
+  "dry_run": false,
+  "sql": "INSERT INTO users (id, full_name, email, phone, password_hash, status, email_verified_at, created_at, updated_at) VALUES ('11111111-1111-1111-1111-111111111111', 'Alumno Demo', 'alumno_demo@gym.local', '5551234567', '$argon2id$v=19$m=65536,t=3,p=4$demo_hash', 'ACTIVE', NOW(), NOW(), NOW());"
+}
+```
+
+Nota:
+- El endpoint no ejecuta `DROP/DELETE/ALTER`.
+- Para `users`, incluye `id` y `password_hash` en el SQL.
 
 ## 9) Migraciones
 
