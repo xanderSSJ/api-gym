@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, status
 from sqlalchemy import func, select, text
@@ -8,16 +9,26 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import bad_request, forbidden
+from app.core.security import get_password_hash
+from app.db.models.enums import UserStatus
 from app.db.models.membership import UserMembership
-from app.db.models.user import User
+from app.db.models.user import (
+    User,
+    UserNutritionPreference,
+    UserPhysicalProfile,
+    UserSafetyProfile,
+    UserTrainingPreference,
+)
 from app.db.session import get_db_session
 from app.schemas.admin_import import (
     SQLImportRequest,
     SQLImportResponse,
     SQLImportSnapshot,
+    SQLImportUserResult,
     SQLImportSnapshotUser,
     SQLImportStatementResult,
 )
+from app.services.membership_service import create_or_replace_membership, get_or_create_free_membership
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -142,6 +153,130 @@ async def _build_snapshot(session: AsyncSession) -> SQLImportSnapshot:
     )
 
 
+def _normalize_email(email: str) -> str:
+    normalized = email.strip().lower()
+    if not normalized or "@" not in normalized:
+        raise bad_request(f"Invalid email: '{email}'.")
+    return normalized
+
+
+def _normalize_phone(phone: str | None) -> str | None:
+    if phone is None:
+        return None
+    value = phone.strip()
+    return value or None
+
+
+def _parse_user_status(raw_status: str | None) -> UserStatus:
+    if raw_status is None:
+        return UserStatus.ACTIVE
+    normalized = raw_status.strip().lower()
+    if normalized not in {status.value for status in UserStatus}:
+        raise bad_request(f"Invalid user_status '{raw_status}'. Allowed: active, suspended, deleted.")
+    return UserStatus(normalized)
+
+
+async def _ensure_profiles_for_user(session: AsyncSession, user_id: str) -> None:
+    if (await session.execute(select(UserPhysicalProfile).where(UserPhysicalProfile.user_id == user_id))).scalar_one_or_none() is None:
+        session.add(UserPhysicalProfile(user_id=user_id))
+    if (await session.execute(select(UserTrainingPreference).where(UserTrainingPreference.user_id == user_id))).scalar_one_or_none() is None:
+        session.add(UserTrainingPreference(user_id=user_id))
+    if (await session.execute(select(UserNutritionPreference).where(UserNutritionPreference.user_id == user_id))).scalar_one_or_none() is None:
+        session.add(UserNutritionPreference(user_id=user_id))
+    if (await session.execute(select(UserSafetyProfile).where(UserSafetyProfile.user_id == user_id))).scalar_one_or_none() is None:
+        session.add(UserSafetyProfile(user_id=user_id))
+    await session.flush()
+
+
+async def _import_users_payload(
+    session: AsyncSession,
+    payload: SQLImportRequest,
+    start_statement_no: int,
+) -> tuple[list[SQLImportStatementResult], list[SQLImportUserResult]]:
+    now = datetime.now(UTC)
+    statement_no = start_statement_no
+    statement_results: list[SQLImportStatementResult] = []
+    imported_users: list[SQLImportUserResult] = []
+
+    for item in payload.users:
+        email = _normalize_email(item.email)
+        full_name = (item.full_name or email.split("@")[0]).strip()
+        phone = _normalize_phone(item.phone)
+        preferred_password = (item.password or payload.default_password).strip()
+        if len(preferred_password) < 8:
+            raise bad_request("Password must contain at least 8 characters.")
+        requested_status = _parse_user_status(item.user_status)
+
+        existing = (await session.execute(select(User).where(User.email == email).limit(1))).scalar_one_or_none()
+        if existing is None:
+            user = User(
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                password_hash=get_password_hash(preferred_password),
+                status=requested_status,
+                email_verified_at=now if (payload.auto_verify_email or item.email_verified is True) else None,
+            )
+            session.add(user)
+            await session.flush()
+            await _ensure_profiles_for_user(session, user.id)
+            action = "created"
+        else:
+            user = existing
+            user.full_name = full_name
+            user.phone = phone
+            user.status = requested_status
+            if item.password:
+                user.password_hash = get_password_hash(item.password.strip())
+            if payload.auto_verify_email or item.email_verified is True:
+                user.email_verified_at = user.email_verified_at or now
+            await _ensure_profiles_for_user(session, user.id)
+            action = "updated"
+
+        plan_code = (item.membership.plan_code.strip().lower() if item.membership and item.membership.plan_code else "free")
+        if plan_code == "free":
+            await get_or_create_free_membership(session, user.id)
+        else:
+            await create_or_replace_membership(
+                session=session,
+                user_id=user.id,
+                plan_code=plan_code,
+                provider="admin_import",
+            )
+
+        statement_results.append(
+            SQLImportStatementResult(
+                statement_no=statement_no,
+                command="UPSERT",
+                table="users",
+                rowcount=None if payload.dry_run else 1,
+            )
+        )
+        statement_no += 1
+        statement_results.append(
+            SQLImportStatementResult(
+                statement_no=statement_no,
+                command="UPSERT",
+                table="user_memberships",
+                rowcount=None if payload.dry_run else 1,
+            )
+        )
+        statement_no += 1
+
+        imported_users.append(
+            SQLImportUserResult(
+                email=user.email,
+                user_id=user.id,
+                action=action,
+                plan_code=plan_code,
+                email_verified=user.email_verified_at is not None,
+                created_at=user.created_at,
+            )
+        )
+
+    return statement_results, imported_users
+
+
 @router.put("/sql-import", response_model=SQLImportResponse)
 async def sql_import(
     payload: SQLImportRequest,
@@ -151,32 +286,47 @@ async def sql_import(
     _require_sql_import_enabled()
     _require_admin_key(x_admin_import_key)
 
-    statements = _split_sql_statements(payload.sql)
-    if not statements:
-        raise bad_request("No SQL statements found.")
-    if len(statements) > MAX_STATEMENTS_PER_IMPORT:
-        raise bad_request(f"Too many statements. Max allowed: {MAX_STATEMENTS_PER_IMPORT}.")
-
     results: list[SQLImportStatementResult] = []
-    for index, statement in enumerate(statements, start=1):
-        command, table = _validate_sql_statement(statement)
-        if not payload.dry_run:
-            try:
-                result = await session.execute(text(statement))
-            except Exception as exc:
-                await session.rollback()
-                raise bad_request(f"SQL import failed at statement {index}: {exc}") from exc
-            rowcount = int(result.rowcount or 0)
-        else:
-            rowcount = None
-        results.append(
-            SQLImportStatementResult(
-                statement_no=index,
-                command=command,
-                table=table,
-                rowcount=rowcount,
+    imported_users: list[SQLImportUserResult] = []
+
+    if payload.sql:
+        statements = _split_sql_statements(payload.sql)
+        if not statements:
+            raise bad_request("No SQL statements found.")
+        if len(statements) > MAX_STATEMENTS_PER_IMPORT:
+            raise bad_request(f"Too many statements. Max allowed: {MAX_STATEMENTS_PER_IMPORT}.")
+
+        for index, statement in enumerate(statements, start=1):
+            command, table = _validate_sql_statement(statement)
+            if not payload.dry_run:
+                try:
+                    result = await session.execute(text(statement))
+                except Exception as exc:
+                    await session.rollback()
+                    raise bad_request(f"SQL import failed at statement {index}: {exc}") from exc
+                rowcount = int(result.rowcount or 0)
+            else:
+                rowcount = None
+            results.append(
+                SQLImportStatementResult(
+                    statement_no=index,
+                    command=command,
+                    table=table,
+                    rowcount=rowcount,
+                )
             )
-        )
+
+    if payload.users:
+        start_no = len(results) + 1
+        try:
+            user_results, imported_users = await _import_users_payload(session, payload, start_no)
+        except Exception:
+            await session.rollback()
+            raise
+        results.extend(user_results)
+
+    if not payload.sql and not payload.users:
+        raise bad_request("Provide 'sql' or 'users' payload for import.")
 
     if payload.dry_run:
         await session.rollback()
@@ -188,5 +338,6 @@ async def sql_import(
         dry_run=payload.dry_run,
         executed_statements=len(results),
         results=results,
+        imported_users=imported_users,
         snapshot=snapshot,
     )

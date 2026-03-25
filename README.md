@@ -108,7 +108,9 @@ Frontend local (localhost)
 ### Admin import SQL (controlado)
 - `PUT /v1/admin/sql-import`
   - Requiere header `X-Admin-Import-Key`
-  - Solo permite `INSERT` y `UPDATE`
+  - Acepta dos modos:
+    - `sql`: solo permite `INSERT` y `UPDATE`
+    - `users`: importa usuarios/membresias desde JSON y genera `id` automatico
   - Tablas permitidas:
     - `users`
     - `user_memberships`
@@ -191,17 +193,41 @@ Request:
   - `Content-Type: application/json`
   - `X-Admin-Import-Key: tu_llave_super_segura`
 
-Body JSON:
+Body JSON (modo SQL):
 ```json
 {
   "dry_run": false,
-  "sql": "INSERT INTO users (id, full_name, email, phone, password_hash, status, email_verified_at, created_at, updated_at) VALUES ('11111111-1111-1111-1111-111111111111', 'Alumno Demo', 'alumno_demo@gym.local', '5551234567', '$argon2id$v=19$m=65536,t=3,p=4$demo_hash', 'ACTIVE', NOW(), NOW(), NOW());"
+  "sql": "INSERT INTO users (full_name, email, phone, password_hash, status, email_verified_at, created_at, updated_at) VALUES ('Alumno Demo', 'alumno_demo@gym.local', '5551234567', '$argon2id$v=19$m=65536,t=3,p=4$demo_hash', 'active', NOW(), NOW(), NOW());"
 }
 ```
 
 Nota:
 - El endpoint no ejecuta `DROP/DELETE/ALTER`.
-- Para `users`, incluye `id` y `password_hash` en el SQL.
+- Para `users`, puedes omitir `id` y Postgres lo genera automaticamente.
+
+Body JSON (modo usuarios desde JSON):
+```json
+{
+  "dry_run": false,
+  "auto_verify_email": true,
+  "default_password": "1234567890",
+  "users": [
+    {
+      "full_name": "Phone Check",
+      "email": "phonecheck_c2f7a93e@example.com",
+      "phone": "5551234567",
+      "membership": {
+        "plan_code": "premium_monthly"
+      }
+    }
+  ]
+}
+```
+
+Notas del modo usuarios:
+- No necesitas mandar `user_id`; se genera automaticamente.
+- Con `auto_verify_email=true` quedan verificados y no se pide verificacion de correo.
+- Si no mandas `membership.plan_code`, se asigna `free`.
 
 ## 9) Migraciones
 
