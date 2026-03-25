@@ -21,6 +21,7 @@ class SQLImportUserInput(BaseModel):
 
 
 class SQLImportRequest(BaseModel):
+    admin_import_key: str | None = Field(default=None, max_length=256)
     sql: str | None = Field(default=None, min_length=10, max_length=100_000)
     users: list[SQLImportUserInput] = Field(default_factory=list, max_length=500)
     dry_run: bool = False
