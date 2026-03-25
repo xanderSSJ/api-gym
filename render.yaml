@@ -28,6 +28,10 @@ services:
         value: "false"
       - key: FREE_COOLDOWN_DAYS
         value: "15"
+      - key: ENABLE_SQL_IMPORT_ENDPOINT
+        value: "true"
+      - key: ADMIN_IMPORT_KEY
+        generateValue: true
       - key: MAX_LOGIN_ATTEMPTS_PER_15_MIN
         value: "10"
       - key: MAX_REGISTER_ATTEMPTS_PER_HOUR
@@ -93,6 +97,13 @@ services:
         value: "false"
       - key: FREE_COOLDOWN_DAYS
         value: "15"
+      - key: ENABLE_SQL_IMPORT_ENDPOINT
+        value: "true"
+      - key: ADMIN_IMPORT_KEY
+        fromService:
+          type: web
+          name: gym-api-web
+          envVarKey: ADMIN_IMPORT_KEY
       - key: MAX_LOGIN_ATTEMPTS_PER_15_MIN
         value: "10"
       - key: MAX_REGISTER_ATTEMPTS_PER_HOUR
