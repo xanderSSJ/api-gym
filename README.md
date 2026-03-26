@@ -238,6 +238,7 @@ Notas del modo usuarios:
 - No necesitas mandar `user_id`; se genera automaticamente.
 - Con `auto_verify_email=true` quedan verificados y no se pide verificacion de correo.
 - Si no mandas `membership.plan_code`, se asigna `free`.
+- Si mandas `membership.plan_code: "free"`, el import reemplaza la membresia activa actual por una `free` activa.
 - Para editar un usuario existente, envia el mismo `email` con nuevos valores en:
   - `full_name`
   - `phone`

@@ -89,6 +89,50 @@ async def get_or_create_free_membership(session: AsyncSession, user_id: str) -> 
     return membership
 
 
+async def replace_with_free_membership(
+    session: AsyncSession,
+    user_id: str,
+    provider: str = "internal",
+) -> UserMembership:
+    free_plan = await ensure_plan_exists(
+        session,
+        code="free",
+        name="Free",
+        price=0,
+        billing_period=BillingPeriod.MONTHLY,
+    )
+
+    now = datetime.now(UTC)
+    replaceable_statuses = [
+        MembershipStatus.ACTIVE,
+        MembershipStatus.PENDING_PAYMENT,
+        MembershipStatus.PAST_DUE,
+        MembershipStatus.SUSPENDED,
+    ]
+    await session.execute(
+        update(UserMembership)
+        .where(UserMembership.user_id == user_id, UserMembership.status.in_(replaceable_statuses))
+        .values(
+            status=MembershipStatus.CANCELED,
+            canceled_at=now,
+            auto_renew=False,
+        )
+    )
+
+    membership = UserMembership(
+        user_id=user_id,
+        plan_id=free_plan.id,
+        status=MembershipStatus.ACTIVE,
+        starts_at=now,
+        ends_at=now + timedelta(days=3650),
+        auto_renew=True,
+        provider=provider,
+    )
+    session.add(membership)
+    await session.flush()
+    return membership
+
+
 async def get_membership_context(session: AsyncSession, user_id: str) -> MembershipContext:
     membership, plan = await get_current_membership_record(session, user_id)
     is_active = _is_membership_active(membership, datetime.now(UTC))

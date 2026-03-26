@@ -29,7 +29,10 @@ from app.schemas.admin_import import (
     SQLImportSnapshotUser,
     SQLImportStatementResult,
 )
-from app.services.membership_service import create_or_replace_membership, get_or_create_free_membership
+from app.services.membership_service import (
+    create_or_replace_membership,
+    replace_with_free_membership,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -254,7 +257,11 @@ async def _import_users_payload(
 
         plan_code = (item.membership.plan_code.strip().lower() if item.membership and item.membership.plan_code else "free")
         if plan_code == "free":
-            await get_or_create_free_membership(session, user.id)
+            await replace_with_free_membership(
+                session=session,
+                user_id=user.id,
+                provider="admin_import",
+            )
         else:
             await create_or_replace_membership(
                 session=session,
