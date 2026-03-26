@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500">
+  <rect width="1200" height="500" fill="#0b1220"/>
+  <rect x="40" y="40" width="1120" height="420" rx="16" fill="#111a2b" stroke="#1f2d46"/>
+  <text x="70" y="95" fill="#e6edf7" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Evidencia: Demo pública</text>
+  <text x="70" y="140" fill="#8fa5c5" font-family="Consolas, monospace" font-size="22">GET /v1/demo</text>
+  <rect x="70" y="170" width="1060" height="250" rx="12" fill="#0a101c" stroke="#20314c"/>
+  <text x="95" y="210" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">Gym API Demo Dashboard</text>
+  <rect x="95" y="235" width="130" height="42" rx="8" fill="#2e90fa"/>
+  <rect x="240" y="235" width="130" height="42" rx="8" fill="#2e90fa"/>
+  <rect x="385" y="235" width="150" height="42" rx="8" fill="#2e90fa"/>
+  <rect x="550" y="235" width="130" height="42" rx="8" fill="#2e90fa"/>
+  <text x="128" y="263" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Rutina</text>
+  <text x="258" y="263" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Nutrición</text>
+  <text x="415" y="263" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Beneficios</text>
+  <text x="585" y="263" fill="#ffffff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Datos SQL</text>
+  <text x="95" y="320" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="21">Salida en vista bonita + opción de ver/descargar JSON.</text>
+  <text x="95" y="355" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="21">Límites free en demo por dispositivo para evitar abuso.</text>
+</svg>

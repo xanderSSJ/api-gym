@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#0b1220"/>
+  <rect x="40" y="40" width="1120" height="440" rx="16" fill="#111a2b" stroke="#1f2d46"/>
+  <text x="70" y="95" fill="#e6edf7" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700">Evidencia: Importación de usuarios (Postman)</text>
+  <text x="70" y="140" fill="#8fa5c5" font-family="Consolas, monospace" font-size="22">POST /v1/admin/sql-import</text>
+  <rect x="70" y="170" width="1060" height="270" rx="12" fill="#0a101c" stroke="#20314c"/>
+  <text x="95" y="210" fill="#7ee787" font-family="Consolas, monospace" font-size="22">HTTP/1.1 200 OK</text>
+  <text x="95" y="245" fill="#d2def1" font-family="Consolas, monospace" font-size="20">{</text>
+  <text x="125" y="275" fill="#d2def1" font-family="Consolas, monospace" font-size="20">"imported_users": [</text>
+  <text x="155" y="305" fill="#d2def1" font-family="Consolas, monospace" font-size="20">{ "email": "alumno@demo.com", "action": "created", "plan_code": "free" }</text>
+  <text x="125" y="335" fill="#d2def1" font-family="Consolas, monospace" font-size="20">],</text>
+  <text x="125" y="365" fill="#d2def1" font-family="Consolas, monospace" font-size="20">"snapshot": { "users_total": 18, "memberships_total": 18 }</text>
+  <text x="95" y="395" fill="#d2def1" font-family="Consolas, monospace" font-size="20">}</text>
+  <text x="70" y="468" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="18">Nota: endpoint compatible con PUT/POST (upsert) y DELETE (hard/soft delete).</text>
+</svg>

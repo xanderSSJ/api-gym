@@ -1,6 +1,14 @@
-# Gym API SaaS (FastAPI + PostgreSQL + Docker)
+# Gym API Yeka (FastAPI + PostgreSQL + Docker)
 
-API profesional para gimnasio con sistema `free/premium`, generación de rutinas y planes alimenticios personalizados, seguimiento de progreso, membresías, límites de consumo y base preparada para pagos/webhooks.
+Proyecto de unidad para la universidad. Esta API de gimnasio implementa sistema `free/premium`, generación de rutinas y planes alimenticios, seguimiento de progreso, membresías y límites de consumo.
+
+> Nota académica: este repositorio es un trabajo universitario (no se presenta como producto comercial final).
+
+## Evidencias visuales
+
+![Evidencia Health](docs/images/evidencia-health.svg)
+![Evidencia Import Postman](docs/images/evidencia-import-postman.svg)
+![Evidencia Demo Dashboard](docs/images/evidencia-demo-dashboard.svg)
 
 ## 1) Stack técnico
 
