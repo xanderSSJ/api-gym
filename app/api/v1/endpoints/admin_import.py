@@ -296,12 +296,11 @@ async def _import_users_payload(
     return statement_results, imported_users
 
 
-@router.put("/sql-import", response_model=SQLImportResponse)
-async def sql_import(
+async def _sql_import_handler(
     payload: SQLImportRequest,
-    session: AsyncSession = Depends(get_db_session),
-    x_admin_import_key: str | None = Header(default=None),
-    admin_import_key: str | None = Query(default=None),
+    session: AsyncSession,
+    x_admin_import_key: str | None,
+    admin_import_key: str | None,
 ) -> SQLImportResponse:
     _require_sql_import_enabled()
     resolved_admin_key = _resolve_admin_import_key(
@@ -366,3 +365,23 @@ async def sql_import(
         imported_users=imported_users,
         snapshot=snapshot,
     )
+
+
+@router.put("/sql-import", response_model=SQLImportResponse)
+async def sql_import_put(
+    payload: SQLImportRequest,
+    session: AsyncSession = Depends(get_db_session),
+    x_admin_import_key: str | None = Header(default=None),
+    admin_import_key: str | None = Query(default=None),
+) -> SQLImportResponse:
+    return await _sql_import_handler(payload, session, x_admin_import_key, admin_import_key)
+
+
+@router.post("/sql-import", response_model=SQLImportResponse)
+async def sql_import_post(
+    payload: SQLImportRequest,
+    session: AsyncSession = Depends(get_db_session),
+    x_admin_import_key: str | None = Header(default=None),
+    admin_import_key: str | None = Query(default=None),
+) -> SQLImportResponse:
+    return await _sql_import_handler(payload, session, x_admin_import_key, admin_import_key)

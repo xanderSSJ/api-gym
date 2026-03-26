@@ -107,6 +107,7 @@ Frontend local (localhost)
 
 ### Admin import SQL (controlado)
 - `PUT /v1/admin/sql-import`
+- `POST /v1/admin/sql-import`
   - Si `ADMIN_IMPORT_REQUIRE_KEY=true`, requiere `ADMIN_IMPORT_KEY` por alguno de estos medios:
     - header `X-Admin-Import-Key` (recomendado)
     - body JSON `admin_import_key`
@@ -115,6 +116,9 @@ Frontend local (localhost)
   - Acepta dos modos:
     - `sql`: solo permite `INSERT` y `UPDATE`
     - `users`: importa usuarios/membresias desde JSON y genera `id` automatico
+  - En modo `users`, ambos metodos (`POST` y `PUT`) hacen upsert:
+    - si el correo no existe -> crea usuario
+    - si el correo existe -> actualiza nombre, telefono, estado y plan
   - Tablas permitidas:
     - `users`
     - `user_memberships`
@@ -192,7 +196,7 @@ Documentacion:
 ### Ejemplo de uso del import SQL (Postman)
 
 Request:
-- Metodo: `PUT`
+- Metodo: `PUT` o `POST`
 - URL: `http://localhost:8000/v1/admin/sql-import`
 - Headers:
   - `Content-Type: application/json`
@@ -234,6 +238,10 @@ Notas del modo usuarios:
 - No necesitas mandar `user_id`; se genera automaticamente.
 - Con `auto_verify_email=true` quedan verificados y no se pide verificacion de correo.
 - Si no mandas `membership.plan_code`, se asigna `free`.
+- Para editar un usuario existente, envia el mismo `email` con nuevos valores en:
+  - `full_name`
+  - `phone`
+  - `membership.plan_code` (por ejemplo `premium_monthly` o `free`)
 
 ## 9) Migraciones
 
