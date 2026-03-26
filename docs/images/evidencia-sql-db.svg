@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="560" viewBox="0 0 1200 560">
+  <rect width="1200" height="560" fill="#0b1220"/>
+  <rect x="36" y="36" width="1128" height="488" rx="16" fill="#111a2b" stroke="#233451"/>
+  <text x="68" y="86" fill="#e6edf7" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Evidencia: Datos SQL de la API</text>
+  <text x="68" y="124" fill="#90a6c6" font-family="Consolas, monospace" font-size="20">GET /v1/demo?response=json&amp;feature=sql</text>
+
+  <rect x="68" y="150" width="1064" height="92" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="92" y="186" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="700">Totales</text>
+  <text x="92" y="218" fill="#d2def1" font-family="Consolas, monospace" font-size="20">users: 17 | verified_users: 15 | premium_users: 7 | routines_saved: 7 | nutrition_plans_saved: 6</text>
+
+  <rect x="68" y="256" width="1064" height="238" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="92" y="290" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Usuarios registrados</text>
+  <text x="92" y="322" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="18">Nombre</text>
+  <text x="380" y="322" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="18">Correo</text>
+  <text x="760" y="322" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="18">Membresía</text>
+  <text x="980" y="322" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="18">Estado</text>
+
+  <text x="92" y="354" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Phonlolite Checktest</text>
+  <text x="380" y="354" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">phonecheck_c2f7a93e@example.com</text>
+  <text x="760" y="354" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">free</text>
+  <text x="980" y="354" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">active</text>
+
+  <text x="92" y="386" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Alumno Demo</text>
+  <text x="380" y="386" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">alumno_demo@gym.local</text>
+  <text x="760" y="386" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">premium_monthly</text>
+  <text x="980" y="386" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">active</text>
+
+  <text x="68" y="520" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="17">La salida incluye usuarios, membresías, rutinas guardadas y planes de nutrición guardados.</text>
+</svg>

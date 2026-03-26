@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="540" viewBox="0 0 1200 540">
+  <rect width="1200" height="540" fill="#0b1220"/>
+  <rect x="36" y="36" width="1128" height="468" rx="16" fill="#111a2b" stroke="#233451"/>
+  <text x="68" y="86" fill="#e6edf7" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Evidencia: Rutina generada</text>
+  <text x="68" y="124" fill="#90a6c6" font-family="Consolas, monospace" font-size="20">GET /v1/demo?response=json&amp;feature=rutina&amp;device_id=demo-a1</text>
+
+  <rect x="68" y="150" width="1064" height="74" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="92" y="188" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="23" font-weight="700">Demo Fuerza y Composición (4 días)</text>
+  <text x="92" y="214" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="18">Objetivo: Bajar grasa y mantener masa muscular | Nivel: Principiante | Semanas: 4</text>
+
+  <rect x="68" y="240" width="1064" height="228" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="92" y="274" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Día / Enfoque</text>
+  <text x="360" y="274" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Ejercicio</text>
+  <text x="690" y="274" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Series/Reps</text>
+  <text x="940" y="274" fill="#bad3ff" font-family="Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Descanso</text>
+
+  <text x="92" y="314" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Lunes / Pierna + Core</text>
+  <text x="360" y="314" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Sentadilla goblet</text>
+  <text x="690" y="314" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">3 x 10-12</text>
+  <text x="940" y="314" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">60 seg</text>
+
+  <text x="92" y="346" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Miércoles / Empuje</text>
+  <text x="360" y="346" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Press de banca</text>
+  <text x="690" y="346" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">4 x 8-10</text>
+  <text x="940" y="346" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">90 seg</text>
+
+  <text x="92" y="378" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Viernes / Tirón</text>
+  <text x="360" y="378" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Remo con barra</text>
+  <text x="690" y="378" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">4 x 8-10</text>
+  <text x="940" y="378" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">90 seg</text>
+
+  <text x="92" y="410" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Sábado / Full body</text>
+  <text x="360" y="410" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">Peso muerto rumano</text>
+  <text x="690" y="410" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">3 x 10-12</text>
+  <text x="940" y="410" fill="#d2def1" font-family="Segoe UI, Arial, sans-serif" font-size="18">75 seg</text>
+
+  <text x="68" y="492" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="17">Incluye ejercicios, series, repeticiones y tiempos de descanso en la respuesta JSON.</text>
+</svg>

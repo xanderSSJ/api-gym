@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520">
+  <rect width="1200" height="520" fill="#0b1220"/>
+  <rect x="36" y="36" width="1128" height="448" rx="16" fill="#111a2b" stroke="#233451"/>
+  <text x="68" y="86" fill="#e6edf7" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700">Evidencia: DELETE desde Postman</text>
+  <text x="68" y="124" fill="#90a6c6" font-family="Consolas, monospace" font-size="20">DELETE /v1/admin/sql-import</text>
+
+  <rect x="68" y="150" width="520" height="282" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="92" y="186" fill="#bad3ff" font-family="Consolas, monospace" font-size="20">{</text>
+  <text x="112" y="216" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"email": "phonecheck_c2f7a93e@example.com",</text>
+  <text x="112" y="246" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"hard_delete": false,</text>
+  <text x="112" y="276" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"dry_run": false</text>
+  <text x="92" y="306" fill="#bad3ff" font-family="Consolas, monospace" font-size="20">}</text>
+  <text x="92" y="360" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="17">soft delete: marca usuario como deleted</text>
+  <text x="92" y="386" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="17">y cancela membresías activas.</text>
+
+  <rect x="612" y="150" width="520" height="282" rx="10" fill="#0a101c" stroke="#20314c"/>
+  <text x="636" y="186" fill="#7ee787" font-family="Consolas, monospace" font-size="21">HTTP/1.1 200 OK</text>
+  <text x="636" y="218" fill="#d2def1" font-family="Consolas, monospace" font-size="19">{</text>
+  <text x="656" y="248" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"action": "soft_deleted",</text>
+  <text x="656" y="278" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"user_id": "9430aac5-6e62-4f68-acbd-e7212711967d",</text>
+  <text x="656" y="308" fill="#d2def1" font-family="Consolas, monospace" font-size="19">"email": "phonecheck_c2f7a93e@example.com"</text>
+  <text x="636" y="338" fill="#d2def1" font-family="Consolas, monospace" font-size="19">}</text>
+  <text x="636" y="390" fill="#8fa5c5" font-family="Segoe UI, Arial, sans-serif" font-size="17">hard delete: usa "hard_delete": true.</text>
+</svg>

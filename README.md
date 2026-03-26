@@ -1,4 +1,4 @@
-# Gym API Yeka (FastAPI + PostgreSQL + Docker)
+# Gym API Yeka
 
 Proyecto de unidad para la universidad. Esta API de gimnasio implementa sistema `free/premium`, generación de rutinas y planes alimenticios, seguimiento de progreso, membresías y límites de consumo.
 
@@ -6,8 +6,39 @@ Proyecto de unidad para la universidad. Esta API de gimnasio implementa sistema 
 
 ## Evidencias visuales
 
+### 1) Health
+Endpoint: `GET /v1/health`
+
 ![Evidencia Health](docs/images/evidencia-health.svg)
+
+### 2) Rutinas (demo)
+Endpoint: `GET /v1/demo?response=json&feature=rutina&device_id=demo-a1`
+
+![Evidencia Rutina](docs/images/evidencia-rutina.svg)
+
+### 3) Plan alimenticio (demo)
+Endpoint: `GET /v1/demo?response=json&feature=nutricion&device_id=demo-a1`
+
+![Evidencia Nutricion](docs/images/evidencia-nutricion.svg)
+
+### 4) Datos de base de datos (demo SQL)
+Endpoint: `GET /v1/demo?response=json&feature=sql`
+
+![Evidencia SQL DB](docs/images/evidencia-sql-db.svg)
+
+### 5) Creación/edición por import (Postman)
+Endpoint: `POST /v1/admin/sql-import` o `PUT /v1/admin/sql-import`
+
 ![Evidencia Import Postman](docs/images/evidencia-import-postman.svg)
+
+### 6) Eliminación desde API (DELETE)
+Endpoint: `DELETE /v1/admin/sql-import`
+
+![Evidencia Delete](docs/images/evidencia-delete.svg)
+
+### 7) Dashboard de demo
+Endpoint: `GET /v1/demo`
+
 ![Evidencia Demo Dashboard](docs/images/evidencia-demo-dashboard.svg)
 
 ## 1) Stack técnico
@@ -60,7 +91,7 @@ Frontend local (localhost)
   - Validación de membresía y entitlements en backend.
   - CORS para frontend local + producción.
 - Riesgo de salud:
-  - Si usuario requiere supervisión profesional, se bloquea generación automática.
+  - Si usuario requiere supervisión especializada, se bloquea generación automática.
 
 ## 5) Endpoints principales
 
@@ -333,4 +364,4 @@ Nota DNS importante:
 
 ## 11) Advertencia de salud (disclaimer)
 
-Esta API no sustituye médico, nutriólogo ni entrenador profesional. El sistema debe mostrar advertencias para lesiones, enfermedades y condiciones especiales antes de recomendaciones automáticas.
+Esta API no sustituye médico, nutriólogo ni entrenador. El sistema debe mostrar advertencias para lesiones, enfermedades y condiciones especiales antes de recomendaciones automáticas.
