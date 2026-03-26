@@ -108,6 +108,7 @@ Frontend local (localhost)
 ### Admin import SQL (controlado)
 - `PUT /v1/admin/sql-import`
 - `POST /v1/admin/sql-import`
+- `DELETE /v1/admin/sql-import`
   - Si `ADMIN_IMPORT_REQUIRE_KEY=true`, requiere `ADMIN_IMPORT_KEY` por alguno de estos medios:
     - header `X-Admin-Import-Key` (recomendado)
     - body JSON `admin_import_key`
@@ -116,6 +117,9 @@ Frontend local (localhost)
   - Acepta dos modos:
     - `sql`: solo permite `INSERT` y `UPDATE`
     - `users`: importa usuarios/membresias desde JSON y genera `id` automatico
+  - `DELETE` permite borrar por `user_id` o `email`:
+    - `hard_delete=true` (default): elimina usuario y datos relacionados por cascada.
+    - `hard_delete=false`: marca usuario como `deleted` y cancela membresias activas.
   - En modo `users`, ambos metodos (`POST` y `PUT`) hacen upsert:
     - si el correo no existe -> crea usuario
     - si el correo existe -> actualiza nombre, telefono, estado y plan
@@ -243,6 +247,24 @@ Notas del modo usuarios:
   - `full_name`
   - `phone`
   - `membership.plan_code` (por ejemplo `premium_monthly` o `free`)
+
+Ejemplo de borrado (DELETE):
+```json
+{
+  "user_id": "9430aac5-6e62-4f68-acbd-e7212711967d",
+  "hard_delete": true,
+  "dry_run": false
+}
+```
+
+Ejemplo de baja logica (soft delete por email):
+```json
+{
+  "email": "phonecheck_c2f7a93e@example.com",
+  "hard_delete": false,
+  "dry_run": false
+}
+```
 
 ## 9) Migraciones
 

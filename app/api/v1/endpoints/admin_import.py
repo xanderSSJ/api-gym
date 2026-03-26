@@ -5,13 +5,13 @@ import secrets
 from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
-from sqlalchemy import func, select, text
+from sqlalchemy import func, select, text, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions import bad_request, forbidden
 from app.core.security import get_password_hash
-from app.db.models.enums import UserStatus
+from app.db.models.enums import MembershipStatus, UserStatus
 from app.db.models.membership import UserMembership
 from app.db.models.user import (
     User,
@@ -22,6 +22,8 @@ from app.db.models.user import (
 )
 from app.db.session import get_db_session
 from app.schemas.admin_import import (
+    SQLImportDeleteRequest,
+    SQLImportDeleteResponse,
     SQLImportRequest,
     SQLImportResponse,
     SQLImportSnapshot,
@@ -187,6 +189,24 @@ def _normalize_phone(phone: str | None) -> str | None:
         return None
     value = phone.strip()
     return value or None
+
+
+async def _get_user_for_delete(session: AsyncSession, payload: SQLImportDeleteRequest) -> User:
+    if not payload.user_id and not payload.email:
+        raise bad_request("Provide user_id or email for delete operation.")
+
+    if payload.user_id:
+        user = (await session.execute(select(User).where(User.id == payload.user_id).limit(1))).scalar_one_or_none()
+        if user:
+            return user
+
+    if payload.email:
+        normalized_email = _normalize_email(payload.email)
+        user = (await session.execute(select(User).where(User.email == normalized_email).limit(1))).scalar_one_or_none()
+        if user:
+            return user
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 
 
 def _parse_user_status(raw_status: str | None) -> UserStatus:
@@ -392,3 +412,66 @@ async def sql_import_post(
     admin_import_key: str | None = Query(default=None),
 ) -> SQLImportResponse:
     return await _sql_import_handler(payload, session, x_admin_import_key, admin_import_key)
+
+
+@router.delete("/sql-import", response_model=SQLImportDeleteResponse)
+async def sql_import_delete(
+    payload: SQLImportDeleteRequest,
+    session: AsyncSession = Depends(get_db_session),
+    x_admin_import_key: str | None = Header(default=None),
+    admin_import_key: str | None = Query(default=None),
+) -> SQLImportDeleteResponse:
+    _require_sql_import_enabled()
+    resolved_admin_key = _resolve_admin_import_key(
+        header_key=x_admin_import_key,
+        body_key=payload.admin_import_key,
+        query_key=admin_import_key,
+    )
+    _require_admin_key(resolved_admin_key)
+
+    user = await _get_user_for_delete(session, payload)
+    previous_status = user.status.value
+    user_email = user.email
+    user_id = user.id
+    now = datetime.now(UTC)
+
+    if payload.hard_delete:
+        await session.delete(user)
+        action = "hard_deleted"
+    else:
+        user.status = UserStatus.DELETED
+        await session.execute(
+            update(UserMembership)
+            .where(
+                UserMembership.user_id == user_id,
+                UserMembership.status.in_(
+                    [
+                        MembershipStatus.ACTIVE,
+                        MembershipStatus.PENDING_PAYMENT,
+                        MembershipStatus.PAST_DUE,
+                        MembershipStatus.SUSPENDED,
+                    ]
+                ),
+            )
+            .values(
+                status=MembershipStatus.CANCELED,
+                canceled_at=now,
+                auto_renew=False,
+            )
+        )
+        action = "soft_deleted"
+
+    if payload.dry_run:
+        await session.rollback()
+    else:
+        await session.commit()
+
+    snapshot = await _build_snapshot(session)
+    return SQLImportDeleteResponse(
+        dry_run=payload.dry_run,
+        action=action,
+        user_id=user_id,
+        email=user_email,
+        previous_status=previous_status,
+        snapshot=snapshot,
+    )

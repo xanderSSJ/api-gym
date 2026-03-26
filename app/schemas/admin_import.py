@@ -64,3 +64,20 @@ class SQLImportResponse(BaseModel):
     results: list[SQLImportStatementResult]
     imported_users: list[SQLImportUserResult] = Field(default_factory=list)
     snapshot: SQLImportSnapshot
+
+
+class SQLImportDeleteRequest(BaseModel):
+    admin_import_key: str | None = Field(default=None, max_length=256)
+    user_id: str | None = Field(default=None, min_length=10, max_length=80)
+    email: str | None = Field(default=None, min_length=3, max_length=255)
+    hard_delete: bool = True
+    dry_run: bool = False
+
+
+class SQLImportDeleteResponse(BaseModel):
+    dry_run: bool
+    action: str
+    user_id: str
+    email: str
+    previous_status: str
+    snapshot: SQLImportSnapshot

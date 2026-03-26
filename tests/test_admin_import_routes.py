@@ -14,3 +14,4 @@ def test_sql_import_route_supports_put_and_post() -> None:
     assert sql_import_methods is not None
     assert "PUT" in sql_import_methods
     assert "POST" in sql_import_methods
+    assert "DELETE" in sql_import_methods
