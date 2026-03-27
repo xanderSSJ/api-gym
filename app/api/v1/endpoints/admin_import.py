@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import secrets
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy import func, select, text, update
@@ -22,6 +23,7 @@ from app.db.models.user import (
 )
 from app.db.session import get_db_session
 from app.schemas.admin_import import (
+    SQLImportFormatResponse,
     SQLImportDeleteRequest,
     SQLImportDeleteResponse,
     SQLImportRequest,
@@ -189,6 +191,94 @@ def _normalize_phone(phone: str | None) -> str | None:
         return None
     value = phone.strip()
     return value or None
+
+
+def _sql_import_format_payload() -> SQLImportFormatResponse:
+    return SQLImportFormatResponse(
+        endpoint="/v1/admin/sql-import",
+        description="Plantilla de formatos para importar/editar/borrar usuarios por Postman.",
+        methods=["GET", "POST", "PUT", "DELETE"],
+        allowed_tables=sorted(ALLOWED_TABLES),
+        users_payload_example={
+            "dry_run": False,
+            "auto_verify_email": True,
+            "default_password": "1234567890",
+            "users": [
+                {
+                    "full_name": "Alumno Demo",
+                    "email": "alumno_demo@example.com",
+                    "phone": "5551234567",
+                    "membership": {"plan_code": "free"},
+                }
+            ],
+        },
+        delete_payload_example={
+            "email": "alumno_demo@example.com",
+            "hard_delete": False,
+            "dry_run": False,
+        },
+        sql_payload_example={
+            "dry_run": False,
+            "sql": "UPDATE users SET full_name='Alumno Demo Editado' WHERE email='alumno_demo@example.com';",
+        },
+        db_json_snapshot_endpoint="/v1/demo?response=json&feature=sql",
+        db_json_snapshot_note=(
+            "Ese endpoint devuelve el snapshot JSON de la base de datos (usuarios, membresias, rutinas y nutricion)."
+        ),
+    )
+
+
+def _db_schema_payload() -> dict[str, Any]:
+    return {
+        "feature": "db_schema",
+        "description": "Formato general de tablas principales para importacion/consulta en este proyecto.",
+        "tables": {
+            "users": {
+                "pk": "id (uuid)",
+                "fields": {
+                    "full_name": "string",
+                    "email": "string (unique)",
+                    "phone": "string|null",
+                    "status": "active|suspended|deleted",
+                    "email_verified_at": "datetime|null",
+                },
+            },
+            "user_memberships": {
+                "pk": "id (uuid)",
+                "fk": {"user_id": "users.id", "plan_id": "membership_plans.id"},
+                "fields": {
+                    "status": "active|pending_payment|past_due|suspended|canceled",
+                    "starts_at": "datetime",
+                    "ends_at": "datetime",
+                    "provider": "string",
+                    "auto_renew": "boolean",
+                },
+            },
+            "training_plans": {
+                "pk": "id (uuid)",
+                "fk": {"user_id": "users.id"},
+                "fields": {
+                    "name": "string",
+                    "goal": "enum",
+                    "level": "enum",
+                    "weeks": "integer",
+                    "is_current": "boolean",
+                },
+            },
+            "nutrition_plans": {
+                "pk": "id (uuid)",
+                "fk": {"user_id": "users.id"},
+                "fields": {
+                    "name": "string",
+                    "goal": "enum",
+                    "days_count": "integer",
+                    "target_calories": "integer",
+                    "is_current": "boolean",
+                },
+            },
+        },
+        "tip": "Para ver datos reales en JSON usa /v1/demo?response=json&feature=sql",
+    }
 
 
 async def _get_user_for_delete(session: AsyncSession, payload: SQLImportDeleteRequest) -> User:
@@ -412,6 +502,42 @@ async def sql_import_post(
     admin_import_key: str | None = Query(default=None),
 ) -> SQLImportResponse:
     return await _sql_import_handler(payload, session, x_admin_import_key, admin_import_key)
+
+
+@router.get("/sql-import", response_model=dict[str, Any])
+async def sql_import_get_format(
+    view: str = Query(
+        default="template",
+        pattern="^(template|users|delete|sql|db_schema)$",
+        description="template|users|delete|sql|db_schema",
+    ),
+) -> dict[str, Any]:
+    _require_sql_import_enabled()
+    payload = _sql_import_format_payload().model_dump()
+    if view == "template":
+        return payload
+    if view == "users":
+        return {
+            "feature": "users_payload_example",
+            "method": "POST/PUT",
+            "endpoint": payload["endpoint"],
+            "json": payload["users_payload_example"],
+        }
+    if view == "delete":
+        return {
+            "feature": "delete_payload_example",
+            "method": "DELETE",
+            "endpoint": payload["endpoint"],
+            "json": payload["delete_payload_example"],
+        }
+    if view == "sql":
+        return {
+            "feature": "sql_payload_example",
+            "method": "POST/PUT",
+            "endpoint": payload["endpoint"],
+            "json": payload["sql_payload_example"],
+        }
+    return _db_schema_payload()
 
 
 @router.delete("/sql-import", response_model=SQLImportDeleteResponse)

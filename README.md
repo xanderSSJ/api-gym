@@ -238,6 +238,16 @@ Documentacion:
 
 ### Ejemplo de uso del import SQL (Postman)
 
+Formato JSON por `GET` (estilo consulta directa, sin body):
+- `GET /v1/admin/sql-import?view=template` -> muestra todas las plantillas.
+- `GET /v1/admin/sql-import?view=users` -> plantilla para crear/editar usuarios (`POST/PUT`).
+- `GET /v1/admin/sql-import?view=delete` -> plantilla para borrar (`DELETE`).
+- `GET /v1/admin/sql-import?view=sql` -> plantilla para ejecutar SQL permitido (`POST/PUT`).
+- `GET /v1/admin/sql-import?view=db_schema` -> formato de tablas principales en JSON.
+
+Si quieres ver datos reales de BD en JSON:
+- `GET /v1/demo?response=json&feature=sql`
+
 Request:
 - Metodo: `PUT` o `POST`
 - URL: `http://localhost:8000/v1/admin/sql-import`

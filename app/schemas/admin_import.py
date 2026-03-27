@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -81,3 +82,15 @@ class SQLImportDeleteResponse(BaseModel):
     email: str
     previous_status: str
     snapshot: SQLImportSnapshot
+
+
+class SQLImportFormatResponse(BaseModel):
+    endpoint: str
+    description: str
+    methods: list[str]
+    allowed_tables: list[str]
+    users_payload_example: dict[str, Any]
+    delete_payload_example: dict[str, Any]
+    sql_payload_example: dict[str, Any]
+    db_json_snapshot_endpoint: str
+    db_json_snapshot_note: str
