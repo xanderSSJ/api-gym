@@ -4,6 +4,13 @@ Proyecto de unidad para la universidad. Esta API de gimnasio implementa sistema 
 
 > Nota académica: este repositorio es un trabajo universitario (no se presenta como producto comercial final).
 
+## Novedades recientes
+
+- Se agrego `GET /v1/admin/sql-import` para consultar formatos JSON listos para Postman.
+- `POST /v1/admin/sql-import` y `PUT /v1/admin/sql-import` permiten crear/editar usuarios por email (upsert).
+- `DELETE /v1/admin/sql-import` permite borrar usuario; en uso basico solo requiere `user_id`.
+- Ajuste de membresia: al importar `plan_code: "free"` se reemplaza la membresia activa por una free activa.
+
 ## Evidencias visuales
 
 ### 1) Health
@@ -145,6 +152,7 @@ Frontend local (localhost)
 - `GET /v1/health`
 
 ### Admin import SQL (controlado)
+- `GET /v1/admin/sql-import`
 - `PUT /v1/admin/sql-import`
 - `POST /v1/admin/sql-import`
 - `DELETE /v1/admin/sql-import`
@@ -156,9 +164,8 @@ Frontend local (localhost)
   - Acepta dos modos:
     - `sql`: solo permite `INSERT` y `UPDATE`
     - `users`: importa usuarios/membresias desde JSON y genera `id` automatico
-  - `DELETE` permite borrar por `user_id` o `email`:
-    - `hard_delete=true` (default): elimina usuario y datos relacionados por cascada.
-    - `hard_delete=false`: marca usuario como `deleted` y cancela membresias activas.
+  - `GET` devuelve formatos JSON listos para consumir en Postman.
+  - `DELETE`: para borrado rapido solo necesitas `user_id` en el body.
   - En modo `users`, ambos metodos (`POST` y `PUT`) hacen upsert:
     - si el correo no existe -> crea usuario
     - si el correo existe -> actualiza nombre, telefono, estado y plan
@@ -238,12 +245,19 @@ Documentacion:
 
 ### Ejemplo de uso del import SQL (Postman)
 
-Formato JSON por `GET` (estilo consulta directa, sin body):
-- `GET /v1/admin/sql-import?view=template` -> muestra todas las plantillas.
-- `GET /v1/admin/sql-import?view=users` -> plantilla para crear/editar usuarios (`POST/PUT`).
-- `GET /v1/admin/sql-import?view=delete` -> plantilla para borrar (`DELETE`).
-- `GET /v1/admin/sql-import?view=sql` -> plantilla para ejecutar SQL permitido (`POST/PUT`).
-- `GET /v1/admin/sql-import?view=db_schema` -> formato de tablas principales en JSON.
+Formato JSON por `GET` (consulta directa tipo API publica en Postman):
+- `GET /v1/admin/sql-import?view=template`
+- `GET /v1/admin/sql-import?view=users`
+- `GET /v1/admin/sql-import?view=delete`
+- `GET /v1/admin/sql-import?view=sql`
+- `GET /v1/admin/sql-import?view=db_schema`
+
+URLs completas (produccion):
+- `https://api.xanderssj.xyz/v1/admin/sql-import?view=template`
+- `https://api.xanderssj.xyz/v1/admin/sql-import?view=users`
+- `https://api.xanderssj.xyz/v1/admin/sql-import?view=delete`
+- `https://api.xanderssj.xyz/v1/admin/sql-import?view=sql`
+- `https://api.xanderssj.xyz/v1/admin/sql-import?view=db_schema`
 
 Si quieres ver datos reales de BD en JSON:
 - `GET /v1/demo?response=json&feature=sql`
@@ -297,19 +311,17 @@ Notas del modo usuarios:
   - `phone`
   - `membership.plan_code` (por ejemplo `premium_monthly` o `free`)
 
-Ejemplo de borrado (DELETE):
+Ejemplo de borrado (DELETE) minimo requerido:
 ```json
 {
-  "user_id": "9430aac5-6e62-4f68-acbd-e7212711967d",
-  "hard_delete": true,
-  "dry_run": false
+  "user_id": "b0a76620-0a52-4bb7-be2d-1d544031baf0"
 }
 ```
 
-Ejemplo de baja logica (soft delete por email):
+Ejemplo opcional avanzado (soft delete):
 ```json
 {
-  "email": "phonecheck_c2f7a93e@example.com",
+  "user_id": "b0a76620-0a52-4bb7-be2d-1d544031baf0",
   "hard_delete": false,
   "dry_run": false
 }
